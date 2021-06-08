@@ -270,7 +270,6 @@ int frequency(char note)
 void setup(void)
 {
     uint8_t mac[6];
-    char mdnsDomain[] = "";
 
     ets_install_putc1(&_u0_putc);
     system_set_os_print(1);
@@ -333,6 +332,7 @@ void setup(void)
 
     setupDNSServer();
 
+    char mdnsDomain[64];
     sprintf(mdnsDomain, "%s.local", appid);
     dbg_printf("Starting mDNS Responder");
 
@@ -776,11 +776,11 @@ void eepromLoad()
     else
     {
         // Load Settings from JSON
-        sprintf(ssid, "%s", root["ssid"].as<char *>());
+        sprintf(ssid, "%s", root["ssid"].as<const char*>());
         channel = root["channel"];
         interval = root["interval"];
-        sprintf(username, "%s", root["username"].as<char *>());
-        sprintf(password, "%s", root["password"].as<char *>());
+        sprintf(username, "%s", root["username"].as<const char*>());
+        sprintf(password, "%s", root["password"].as<const char*>());
 
         DEBUG = root["debug"];
         SILENT = root["silent"];
@@ -999,7 +999,6 @@ void onRequest(AsyncWebServerRequest *request)
     }
     else
     {
-        char s_tmp[] = "";
         AsyncWebServerResponse *response;
 
         if (!request->hasParam("download") && SPIFFS.exists(path + ".gz"))
@@ -1015,8 +1014,9 @@ void onRequest(AsyncWebServerRequest *request)
         response->addHeader("Pragma", "no-cache");
         response->addHeader("Expires", "-1");
         //        response->setContentLength (CONTENT_LENGTH_UNKNOWN);
-        sprintf(s_tmp, "%d", ESP.getFreeHeap());
-        response->addHeader("ESP-Memory", s_tmp);
+        char freeHeap[15];
+        sprintf(freeHeap, "%d", ESP.getFreeHeap());
+        response->addHeader("ESP-Memory", freeHeap);
         request->send(response);
     }
 
