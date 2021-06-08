@@ -1,3 +1,5 @@
+#!/usr/bin/python
+
 #
 # Clone files from "www" to "data" folder
 # Then compress and embed resources
@@ -210,7 +212,7 @@ print(options)
 
 # Only run when building & uploading SPIFFS image
 #env.AddPreAction("buildfs", before_buildfs)
-env.AddPreAction("$BUILD_DIR/spiffs.bin", before_buildfs)
+env.AddPreAction("$BUILD_DIR/littlefs.bin", before_buildfs)
 env.AddPostAction("uploadfs", after_uploadfs)
 
 #if 'SPIFFS_START' in env:
