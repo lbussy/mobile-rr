@@ -18,6 +18,8 @@
 #include <Ticker.h>
 // Local Libs
 #include "DNSServer.h"
+// Local includes
+#include "version.h"
 // Sketch definitions
 #define SPIFFS LittleFS
 
@@ -76,7 +78,6 @@ static void _u0_putc(char c);
 String encryptionTypes(int which);
 void dbg_printf(const char *format, ...);
 void printfAll(const char *format, ...);
-String ipToString(IPAddress ip);
 String formatBytes(size_t bytes);
 void beep(int delayms);
 void beepC(int delayms);

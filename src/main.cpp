@@ -1,8 +1,6 @@
 #include "main.h"
 
 // Global data section
-float version = 1.43;
-const char *appid = "mobile-rr";
 char ssid[] = "FREE Highspeed WiFi";
 int channel = 0;
 char username[] = "admin";
@@ -115,20 +113,6 @@ void printfAll(const char *format, ...)
 
         ws.textAll(sbuf);
     }
-}
-
-/** IP to String? */ // TODO:  Get rid of this
-String ipToString(IPAddress ip)
-{
-    String res = "";
-
-    for (int i = 0; i < 3; i++)
-    {
-        res += String((ip >> (8 * i)) & 0xFF) + ".";
-    }
-
-    res += String(((ip >> 8 * 3)) & 0xFF);
-    return res;
 }
 
 // Format bytes
@@ -308,7 +292,7 @@ void setup(void)
         "SoftAP MAC: %02X:%02X:%02X:%02X:%02X:%02X\n"
         "SoftAP IP: %s\n",
         MAC2STR(mac),
-        ipToString(ip).c_str());
+        ip.toString().c_str());
 
     dbg_printf("SYSTEM ---");
     dbg_printf("getSdkVersion:      %s", ESP.getSdkVersion());
@@ -334,7 +318,7 @@ void setup(void)
     setupDNSServer();
 
     char mdnsDomain[64];
-    sprintf(mdnsDomain, "%s.local", appid);
+    sprintf(mdnsDomain, "%s.local", project());
     dbg_printf("Starting mDNS Responder");
 
     if (!mdns.begin(mdnsDomain, ip))
@@ -444,7 +428,7 @@ void setupDNSServer()
     dbg_printf("Starting DNS Server");
     dnsd.onQuery([](const IPAddress &remoteIP, const char *domain, const IPAddress &resolvedIP)
                  {
-                     dbg_printf("DNS Query [%d]: %s -> %s", remoteIP[3], domain, ipToString(resolvedIP).c_str());
+                     dbg_printf("DNS Query [%d]: %s -> %s", remoteIP[3], domain, resolvedIP.toString().c_str());
 
                      // connectivitycheck.android.com -> 74.125.21.113, 172.217.21.67
                      //if ( strstr( "clients1.google.com|clients2.google.com|clients3.google.com|clients4.google.com|clients.l.google.com|connectivitycheck.android.com|connectivitycheck.gstatic.com|android.clients.google.com|play.googleapis.com", domain ) )
@@ -458,7 +442,7 @@ void setupDNSServer()
                      //    dnsd.overrideIP =  IPAddress(ip[0], ip[1], ip[2], ip[3]+10);
                  });
     dnsd.onOverride([](const IPAddress &remoteIP, const char *domain, const IPAddress &overrideIP)
-                    { dbg_printf("DNS Override [%d]: %s -> %s", remoteIP[3], domain, ipToString(overrideIP).c_str()); });
+                    { dbg_printf("DNS Override [%d]: %s -> %s", remoteIP[3], domain, overrideIP.toString().c_str()); });
     //dnsd.setErrorReplyCode ( DNSReplyCode::NoError );
     dnsd.setTTL(0);
     dnsd.start(53, "*", ip);
@@ -488,7 +472,7 @@ void setupHTTPServer()
              {
                  rrsession++;
                  rrtotal++;
-                 String remoteIP = ipToString(request->client()->remoteIP());
+                 String remoteIP = request->client()->remoteIP().toString();
                  printfAll("[[b;yellow;]Rick Roll Sent!] (%d): [%s] %s",
                            rrsession,
                            remoteIP.c_str(),
@@ -546,7 +530,7 @@ void setupOTAServer()
     dbg_printf("Starting OTA Update Server");
 
     // Hostname defaults to esp8266-[ChipID]
-    ArduinoOTA.setHostname(appid);
+    ArduinoOTA.setHostname(project());
 
     // No authentication by default
     ArduinoOTA.setPassword(password);
@@ -708,12 +692,12 @@ String getSystemInformation()
     root["spiffs_free"] = (fs_info.totalBytes - fs_info.usedBytes);
 
     char apIP[16];
-    sprintf(apIP, "%s", ipToString(WiFi.softAPIP()).c_str());
+    sprintf(apIP, "%s", WiFi.softAPIP().toString().c_str());
     root["softap_mac"] = WiFi.softAPmacAddress();
     root["softap_ip"] = apIP;
 
     char staIP[16];
-    sprintf(staIP, "%s", ipToString(WiFi.localIP()).c_str());
+    sprintf(staIP, "%s", WiFi.localIP().toString().c_str());
     root["station_mac"] = WiFi.macAddress();
     root["station_ip"] = staIP;
 
@@ -727,8 +711,8 @@ String getApplicationSettings()
     StaticJsonDocument<512> jsonBuffer;
     JsonObject root = jsonBuffer.as<JsonObject>();
 
-    root["version"] = version;
-    root["appid"] = appid;
+    root["version"] = version();
+    root["appid"] = project();
     root["ssid"] = ssid;
     root["channel"] = chan_selected;
     root["interval"] = (interval);
@@ -788,7 +772,7 @@ void eepromLoad()
         rrtotal = root["rrtotal"];
 
         // If the AppID doesn't match then initialize EEPROM
-        if (version != root["version"])
+        if (strcmp (version(), root["version"]) != 0)
         {
             dbg_printf("EEPROM - Version Changed");
             eepromInitialize();
@@ -807,8 +791,8 @@ void eepromSave()
     StaticJsonDocument<512> jsonBuffer;
     JsonObject root = jsonBuffer.as<JsonObject>();
 
-    root["version"] = version;
-    root["appid"] = appid;
+    root["version"] = version();
+    root["appid"] = project();
     root["ssid"] = ssid;
     root["channel"] = channel;
     root["interval"] = interval;
@@ -977,7 +961,7 @@ void onRequest(AsyncWebServerRequest *request)
 
     String path = request->url();
     char redirect[40];
-    sprintf(redirect, "http://%s/index.htm", ipToString(ip).c_str());
+    sprintf(redirect, "http://%s/index.htm", ip.toString().c_str());
 
     if (request->host() != "mobile-rr.local" && request->host() != WiFi.softAPIP().toString())
     {
@@ -1301,7 +1285,7 @@ void execCommand(AsyncWebSocketClient *client, char *msg)
         client->printf_P(PSTR("SoftAP SSID: %s"), ssid);
         client->printf_P(PSTR("SoftAP  MAC: %02X:%02X:%02X:%02X:%02X:%02X\nSoftAP   IP: %s\n "),
                          MAC2STR(mac),
-                         ipToString(ip).c_str());
+                         ip.toString().c_str());
 
         client_status(client);
     }
@@ -1604,18 +1588,17 @@ void client_status(AsyncWebSocketClient *client)
 {
     struct station_info *station = wifi_softap_get_station_info();
     uint8_t client_count = wifi_softap_get_station_num();
-    struct ip4_addr *ip;
     client->printf_P(PSTR("[[b;yellow;]Connected Client(s)]: %d"),
                      client_count);
     int i = 0;
 
     while (station != NULL)
     {
-        ip = &station->ip;
+        IPAddress stationIP = &station->ip;
         client->printf_P(PSTR("%d: MAC: %02X:%02X:%02X:%02X:%02X:%02X\n    IP: %s"),
                          i,
                          MAC2STR(station->bssid),
-                         ipToString(ip->addr).c_str());
+                        stationIP.toString().c_str());
         i++;
         station = STAILQ_NEXT(station, next);
     }
