@@ -1,10 +1,59 @@
-.clang_complete
-.gcc-flags.json
-.travis.yml
+# PlatformIO
 .pio
 .pioenvs
 .piolibdeps
 .vscode
-.cache
-lib/readme.txt
-data
+*.code-workspace
+
+# Documentation working files
+docs/_build/
+
+# Python Files
+__pycache__
+*.pyc
+
+# PyInstaller Files
+firmware/build
+firmware/dist
+firmware/*.spec
+
+# Project files
+.picasa*
+
+# PCB and Schematic File Backups
+*.*\#[0-9]
+
+# Prerequisites
+*.d
+
+# Compiled Object files
+*.slo
+*.lo
+*.o
+*.obj
+
+# Precompiled Headers
+*.gch
+*.pch
+
+# Compiled Dynamic libraries
+*.so
+*.dylib
+*.dll
+
+# Fortran module files
+*.mod
+*.smod
+
+# Compiled Static libraries
+*.lai
+*.la
+*.a
+*.lib
+
+# Executables
+*.out
+*.app
+*.exe
+!flashFirmware.exe
+!flashFirmware_win.exe
