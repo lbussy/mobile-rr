@@ -1,4 +1,11 @@
-# ESP8266 Mobile Rick Roll Captive Portal
+# (Updated) ESP8266 Mobile Rick Roll Captive Portal
+
+I (LBussy) updated this to use current libs, get rid of errors and warnings, and be a more properly formatted C++ project (rather than an *ino.)  I also changed the board from a D1 Pro to a D1 mini - since I am not using the buzzer I assume this will work but it may require a pinout change if anyone uses this and a buzzer.  Just be aware.
+
+I did this fork and work so I could play with some of the concepts here and start with a known working example.
+
+Anything following this line is from the original author and may not be current or correct.
+
 ### Live Chat
 [![Gitter](https://badges.gitter.im/idolpx/mobile-rr.svg)](https://gitter.im/idolpx/mobile-rr?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge)
 
